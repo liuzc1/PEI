@@ -1,0 +1,29 @@
+function [uti,m2]=uti(x)
+    sigma1 = evalin('base', 'sigma1');
+    b1 = evalin('base', 'b1');
+    sigma2 = evalin('base', 'sigma2');
+    b2 = evalin('base', 'b2');
+    X1 = evalin('base', 'X1');
+    Y1 = evalin('base', 'Y1');
+    X2 = evalin('base', 'X2');
+    Y2 = evalin('base', 'Y2');
+    [N1,~]=size(X1);
+    [N2,~]=size(X2);
+    H = evalin('base', 'H');
+    V = evalin('base', 'V');
+    beta = evalin('base', 'beta');
+    
+    t=zeros(N1+N2,1);
+    for i=1:N1
+        v=sigma1.*exp(-b1.*(norm(x-X1(i,:)))^2); 
+        t(i,1)=v;
+    end
+    for i=N1+1:N1+N2
+        v=sigma1.*exp(-b1.*(norm(X2(i-N1,:)-x))^2)+sigma2.*exp(-b2.*(norm(X2(i-N1,:)-x))^2);
+        t(i,1)=v;
+    end
+    m2=[1,1]*beta+t'*pinv(V)*([Y1;Y2]-H*beta);
+    c2=sigma1+sigma2-[1,1,t']*pinv([zeros(2,2),H';H,V])*[1,1,t']';
+    c2=sqrt(c2);
+    uti=m2+c2;
+end
